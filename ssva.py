@@ -1,8 +1,11 @@
 import argparse
 from PIL import Image, ImageDraw
+from math import floor
 
 # Pixel numbers
-numbers = [Image.new("RGBA", (5, 7)) for x in range(10)]
+number_width  = 5
+number_height = 7
+numbers = [Image.new("RGBA", (number_width, number_height)) for x in range(10)]
 ImageDraw.Draw(numbers[0]).point(
 	[
 		(1, 1),
@@ -191,8 +194,30 @@ def main():
 		for x in range(clip_w, grid.width, clip_w):
 			draw.line([(x, 0), (x, grid.height)], (0, 0, 0, 64), 1)
 
-	out = Image.alpha_composite(grid, sheet)
-	out.save(args.path[0:args.path.rfind(".")] + "_AID" + args.path[args.path.rfind("."):], "PNG")
+	blend = Image.alpha_composite(grid, sheet)
+
+	indices = Image.new("RGBA", (grid.width + clip_w, grid.height + clip_h), (255, 255, 255, 0))
+	for x in range(0, floor(indices.width / clip_w)):
+		num_digits = len(str(x))
+		index_image = Image.new("RGBA", (number_width * num_digits, number_height))
+		for digit in range(num_digits):
+			this_digit = int(str(x)[digit])
+			index_image.paste(numbers[this_digit], (number_width * digit, 0))
+		padding = 2
+		index_image = index_image.resize((clip_w - padding, clip_h))
+		indices.paste(index_image, (clip_w + padding + x * clip_w, 0))
+	for y in range(0, floor(indices.height / clip_h)):
+		num_digits = len(str(y))
+		index_image = Image.new("RGBA", (number_width * num_digits, number_height))
+		for digit in range(num_digits):
+			this_digit = int(str(y)[digit])
+			index_image.paste(numbers[this_digit], (number_width * digit, 0))
+		padding = 2
+		index_image = index_image.resize((clip_w - padding, clip_h))
+		indices.paste(index_image, (0, clip_h + padding + y * clip_h))
+
+	indices.paste(blend, (clip_w, clip_h))
+	indices.save(args.path[0:args.path.rfind(".")] + "_AID" + args.path[args.path.rfind("."):], "PNG")
 
 if __name__ == "__main__":
 	main()

@@ -16,7 +16,6 @@ Output is stored in the same directory as the input file with _AID appended to i
 
 ### Future
 
-* Numbers along top/left sides
 * Output format that matches input
 * Automatic detection/approximation of optimal frame size
 
